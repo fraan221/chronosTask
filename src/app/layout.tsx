@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TimerProvider } from "@/context/timer-context";
@@ -45,24 +46,29 @@ export default function RootLayout({
         >
           <SoundProvider>
             <TimerProvider>
-              <VolumeIndicator />
-              <LayoutWrapper>
-                <Navbar />
-              </LayoutWrapper>
+              <Suspense fallback={null}>
+                <VolumeIndicator />
+              </Suspense>
+              <Suspense fallback={null}>
+                <LayoutWrapper>
+                  <Navbar />
+                </LayoutWrapper>
+              </Suspense>
               <main className="flex-1 w-full">{children}</main>
-              <LayoutWrapper>
-                <footer className="border-t py-6 mt-auto">
-                  <div className="container mx-auto px-4 flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground font-medium">
-                      ChronosTask
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <ThemeToggle />
+              <Suspense fallback={null}>
+                <LayoutWrapper>
+                  <footer className="border-t py-6 mt-auto">
+                    <div className="container mx-auto px-4 flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground font-medium">
+                        ChronosTask
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <ThemeToggle />
+                      </div>
                     </div>
-                  </div>
-                </footer>
-              </LayoutWrapper>
-              <VolumeIndicator />
+                  </footer>
+                </LayoutWrapper>
+              </Suspense>
             </TimerProvider>
           </SoundProvider>
         </ThemeProvider>
