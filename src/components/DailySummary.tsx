@@ -26,29 +26,28 @@ export function DailySummary({
   };
 
   return (
-    <Card className="border-0 shadow-lg bg-linear-to-br from-primary to-primary/90 text-primary-foreground overflow-hidden relative group">
-      <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none group-hover:bg-white/10 transition-colors duration-500" />
+    <Card className="border-0 shadow-sm bg-white/80 dark:bg-zinc-900/50 backdrop-blur-md overflow-hidden relative group ring-1 ring-border/50">
       <CardContent className="p-8 relative z-10">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary-foreground/80 mb-4">
-              <IconClockHour4 className="h-5 w-5" />
-              <h2 className="font-medium tracking-wide text-xs uppercase opacity-90">
-                Total Hoy
+        <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
+          <div className="space-y-1 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 text-muted-foreground mb-2">
+              <IconClockHour4 className="h-4 w-4" />
+              <h2 className="font-semibold tracking-widest text-xs uppercase">
+                Tiempo Total Hoy
               </h2>
             </div>
-            <div className="text-6xl sm:text-7xl font-bold tracking-tighter tabular-nums leading-none">
+            <div className="text-6xl sm:text-7xl font-bold tracking-tighter tabular-nums leading-none text-foreground">
               {formatTime(totalSeconds)}
             </div>
-            <p className="text-primary-foreground/70 font-medium pl-1">
+            <p className="text-muted-foreground font-medium pl-1 text-sm mt-2">
               {formatTimeVerbose(totalSeconds)} de enfoque
             </p>
           </div>
 
-          <div className="flex flex-col items-start md:items-end justify-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 shadow-sm">
-              <IconTrophy className="h-4 w-4 text-yellow-300" />
-              <span className="font-medium text-sm">{getMessage()}</span>
+          <div className="flex items-center">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/5 text-primary border border-primary/10 transition-colors hover:bg-primary/10">
+              <IconTrophy className="h-4 w-4" />
+              <span className="font-semibold text-sm">{getMessage()}</span>
             </div>
           </div>
         </div>

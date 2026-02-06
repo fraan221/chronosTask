@@ -11,6 +11,11 @@ export function VolumeIndicator() {
     useSoundSettings();
   const [isVisible, setIsVisible] = useState(false);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Keyboard shortcuts para volumen (global)
   useKeyboardShortcuts({
@@ -40,6 +45,9 @@ export function VolumeIndicator() {
       if (hideTimeout) clearTimeout(hideTimeout);
     };
   }, [hideTimeout]);
+
+  // Evitar problemas de hidratación renderizando null hasta que esté montado
+  if (!mounted) return null;
 
   // Calcular el porcentaje de volumen para mostrar
   const volumePercent = Math.round(volume * 100);

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Inter, Geist_Mono } from "next/font/google";
+import { DM_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TimerProvider } from "@/context/timer-context";
 import { SoundProvider } from "@/context/sound-context";
@@ -10,13 +10,14 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { VolumeIndicator } from "@/components/VolumeIndicator";
 import LayoutWrapper from "@/components/layout-wrapper";
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -36,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${geistMono.variable} font-sans antialiased bg-background min-h-screen flex flex-col`}
+        className={`${dmSans.variable} ${geistMono.variable} font-sans antialiased bg-background min-h-screen flex flex-col`}
       >
         <ThemeProvider
           attribute="class"

@@ -37,9 +37,9 @@ export function CreateTimerForm({ onCreateTimer }: CreateTimerFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-2 shadow-sm">
-          <IconPlus className="h-4 w-4" />
-          Crear Timer
+        <Button size="sm" className="gap-2 shadow-sm rounded-full px-4 font-medium">
+          <IconPlus className="h-4 w-4" stroke={2.5} />
+          Nuevo Timer
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">

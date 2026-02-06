@@ -52,61 +52,62 @@ export function HistoryPanel({ history }: HistoryPanelProps) {
       : 0;
 
   return (
-    <Card className="border shadow-sm bg-card overflow-hidden">
-      <CardHeader className="pb-3 pt-6 border-b border-border/40 bg-muted/5">
+    <Card className="border-0 shadow-none bg-transparent">
+      <CardHeader className="pb-8 pt-2 px-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
             <IconHistory className="h-4 w-4" />
-            Historial
+            Registro de Actividad
           </CardTitle>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium border border-border/50">
-            {sortedHistory.length} días
+          <span className="text-xs px-2.5 py-1 rounded-full bg-muted/50 text-muted-foreground font-medium border border-border/50">
+            {sortedHistory.length} días registrados
           </span>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 space-y-8">
         {/* Estadísticas */}
-        <div className="grid grid-cols-2 divide-x divide-border/40 border-b border-border/40 bg-muted/10">
-          <div className="p-4 text-center hover:bg-muted/20 transition-colors">
-            <div className="text-xl font-bold font-mono tracking-tight text-foreground">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-6 rounded-2xl bg-white/40 dark:bg-zinc-900/40 border border-white/20 dark:border-white/5 backdrop-blur-sm text-center transition-all hover:bg-white/60 dark:hover:bg-zinc-900/60 shadow-sm">
+            <div className="text-3xl font-bold font-mono tracking-tighter text-primary">
               {formatTimeVerbose(totalAllTime)}
             </div>
-            <div className="text-[10px] uppercase font-bold text-muted-foreground/60 mt-1">
+            <div className="text-[10px] uppercase font-bold text-muted-foreground/70 mt-2 tracking-wide">
               Total Histórico
             </div>
           </div>
-          <div className="p-4 text-center hover:bg-muted/20 transition-colors">
-            <div className="text-xl font-bold font-mono tracking-tight text-foreground">
+          <div className="p-6 rounded-2xl bg-white/40 dark:bg-zinc-900/40 border border-white/20 dark:border-white/5 backdrop-blur-sm text-center transition-all hover:bg-white/60 dark:hover:bg-zinc-900/60 shadow-sm">
+            <div className="text-3xl font-bold font-mono tracking-tighter text-primary">
               {formatTimeVerbose(averagePerDay)}
             </div>
-            <div className="text-[10px] uppercase font-bold text-muted-foreground/60 mt-1">
-              Media Diaria
+            <div className="text-[10px] uppercase font-bold text-muted-foreground/70 mt-2 tracking-wide">
+              Promedio Diario
             </div>
           </div>
         </div>
 
         {/* Lista de días */}
-        <div className="max-h-88 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+        <div className="space-y-3">
           {sortedHistory.map((record) => (
             <div
               key={record.date}
-              className="group flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-all border border-transparent hover:border-border/50 mb-1 last:mb-0"
+              className="group flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-zinc-900/60 hover:bg-white dark:hover:bg-zinc-800 border border-transparent hover:border-border/50 transition-all shadow-sm hover:shadow-md"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <IconCalendar className="h-4 w-4" />
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
+                  <IconCalendar className="h-5 w-5" stroke={1.5} />
                 </div>
-                <span className="text-sm font-medium text-foreground/80">
-                  {formatDate(record.date)}
-                </span>
+                <div>
+                  <span className="block text-sm font-semibold text-foreground">
+                    {formatDate(record.date)}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-medium">
+                   {record.timers.length} {record.timers.length !== 1 ? "sesiones" : "sesión"}
+                  </span>
+                </div>
               </div>
-              <div className="text-right flex flex-col items-end">
-                <div className="text-sm font-mono font-bold text-foreground">
+              <div className="text-right">
+                <div className="text-lg font-mono font-bold text-foreground/90 tracking-tight">
                   {formatTime(record.totalSeconds)}
-                </div>
-                <div className="text-[10px] text-muted-foreground flex items-center gap-1 opacity-70">
-                  {record.timers.length}{" "}
-                  {record.timers.length !== 1 ? "sesiones" : "sesión"}
                 </div>
               </div>
             </div>

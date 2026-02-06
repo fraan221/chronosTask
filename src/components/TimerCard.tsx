@@ -327,43 +327,45 @@ export function TimerCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-        transition-all duration-300 border-border/60 hover:border-primary/40
-        ${isRunning ? "ring-2 ring-primary/20 shadow-lg shadow-primary/5 -translate-y-1" : "shadow-sm hover:shadow-md"}
-        ${isCompleted ? "bg-muted/30" : ""}
+        transition-all duration-300 border-border/40 hover:border-primary/20
+        ${isRunning ? "ring-1 ring-primary/20 shadow-lg shadow-primary/5 bg-white/80 dark:bg-zinc-900/80" : "bg-white/40 dark:bg-zinc-900/30 hover:bg-white/60 dark:hover:bg-zinc-900/60 shadow-sm hover:shadow-md"}
+        ${isCompleted ? "bg-primary/5 border-primary/20" : ""}
+        backdrop-blur-sm group relative overflow-hidden
       `}
       >
-        <CardHeader className="pb-3 pt-5 px-5 flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base font-semibold truncate pr-2 text-foreground/90">
+        <CardHeader className="pb-2 pt-6 px-6 flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-sm font-semibold truncate pr-2 text-muted-foreground group-hover:text-foreground transition-colors">
             {name}
           </CardTitle>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-colors"
+              className="h-7 w-7 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-colors"
               onClick={enterZenMode}
               title="Modo Zen (Pantalla completa)"
             >
-              <IconMaximize className="h-4 w-4" />
+              <IconMaximize className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className="h-7 w-7 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors"
               onClick={onDelete}
             >
-              <IconTrash className="h-4 w-4" />
+              <IconTrash className="h-3.5 w-3.5" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6 px-5 pb-5">
+        <CardContent className="space-y-6 px-6 pb-6">
           {/* Display del tiempo */}
-          <div className="text-center">
+          <div className="text-center py-2">
             <div
               className={`
-              text-5xl font-mono font-bold tracking-tight tabular-nums
-              ${isRunning ? "text-primary" : "text-foreground/80"}
-              ${isCompleted ? "text-foreground opacity-50" : ""}
+              text-6xl font-mono font-bold tracking-tighter tabular-nums
+              ${isRunning ? "text-primary scale-105" : "text-foreground/80"}
+              ${isCompleted ? "text-primary opacity-50" : ""}
+              transition-all duration-300
             `}
             >
               {displayTime}
@@ -372,57 +374,56 @@ export function TimerCard({
 
           {/* Barra de progreso (solo si hay duración) */}
           {duration > 0 && (
-            <div className="relative pt-1">
+            <div className="relative pt-1 px-2">
               <Progress
                 value={progress}
-                className={`h-1.5 bg-secondary ${isCompleted ? "[&>div]:bg-primary" : "[&>div]:bg-primary"}`}
+                className={`h-1 bg-muted ${isCompleted ? "[&>div]:bg-primary" : "[&>div]:bg-primary"}`}
               />
             </div>
           )}
 
           {/* Controles */}
-          <div className="flex gap-3 pt-1">
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={onReset}
+                disabled={elapsed === 0}
+                title="Reiniciar"
+                className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
+            >
+                <IconRefresh className="h-4 w-4" />
+            </Button>
+
             {isAlarmPlaying ? (
               <Button
                 onClick={handleStopAlarm}
-                className="flex-1 font-medium shadow-sm"
-                size="lg"
-                variant="outline"
+                className="h-14 w-14 rounded-full shadow-md shadow-primary/20 hover:scale-105 transition-all bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                size="icon"
               >
-                <IconPlayerStopFilled className="h-4 w-4 mr-2 fill-current" />
-                Detener
+                <IconPlayerStopFilled className="h-6 w-6 fill-current animate-pulse" />
               </Button>
             ) : (
               <Button
                 onClick={onToggle}
                 disabled={isCompleted && !isAlarmPlaying}
-                className="flex-1 font-medium shadow-sm"
-                size="lg"
-                variant={isRunning ? "secondary" : "default"}
+                className={`
+                    h-14 w-14 rounded-full shadow-md hover:scale-105 transition-all
+                    ${isRunning 
+                        ? "bg-white dark:bg-zinc-800 text-primary border border-primary/20 shadow-primary/10 hover:border-primary/40" 
+                        : "bg-primary text-primary-foreground shadow-primary/20 hover:shadow-primary/30"}
+                `}
+                size="icon"
               >
                 {isRunning ? (
-                  <>
-                    <IconPlayerPause className="h-4 w-4 mr-2" />
-                    Pausar
-                  </>
+                  <IconPlayerPause className="h-6 w-6 fill-current" />
                 ) : (
-                  <>
-                    <IconPlayerPlay className="h-4 w-4 mr-2 fill-current" />
-                    {elapsed > 0 ? "Continuar" : "Iniciar"}
-                  </>
+                  <IconPlayerPlay className="h-6 w-6 fill-current pl-1" />
                 )}
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onReset}
-              disabled={elapsed === 0}
-              title="Reiniciar"
-              className="h-10 w-10 shrink-0 border-border/60"
-            >
-              <IconRefresh className="h-4 w-4 text-muted-foreground" />
-            </Button>
+            
+            <div className="w-10" /> {/* Spacer to balance layout */}
           </div>
         </CardContent>
       </Card>
