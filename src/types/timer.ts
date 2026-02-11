@@ -18,4 +18,5 @@ export interface AppState {
   timers: Timer[];
   history: DailyRecord[];
   lastActiveDate: string;
+  accumulatedTodaySeconds?: number;
 }

@@ -70,6 +70,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [timers, setTimers] = useState<Timer[]>([]);
   const [history, setHistory] = useState<DailyRecord[]>([]);
   const [lastActiveDate, setLastActiveDate] = useState<string>(getToday());
+  const [accumulatedTodaySeconds, setAccumulatedTodaySeconds] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -80,6 +81,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     setTimers(state.timers);
     setHistory(state.history);
     setLastActiveDate(state.lastActiveDate);
+    setAccumulatedTodaySeconds(state.accumulatedTodaySeconds ?? 0);
     setIsLoaded(true);
   }, []);
 
@@ -90,7 +92,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     const today = getToday();
 
     if (lastActiveDate !== today) {
-      const totalSeconds = timers.reduce((acc, t) => acc + t.elapsed, 0);
+      const totalSeconds = accumulatedTodaySeconds + timers.reduce((acc, t) => acc + t.elapsed, 0);
 
       if (totalSeconds > 0 || timers.length > 0) {
         const dailyRecord: DailyRecord = {
@@ -107,8 +109,9 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
       }
 
       setTimers((prev) =>
-        prev.map((t) => ({ ...t, elapsed: 0, isRunning: false })),
+        prev.map((t) => ({ ...t, elapsed: 0, isRunning: false, lastStartedAt: undefined })),
       );
+      setAccumulatedTodaySeconds(0);
       setLastActiveDate(today);
     }
   }, [isLoaded, lastActiveDate, timers]);
@@ -116,8 +119,8 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   // Guardar en localStorage
   useEffect(() => {
     if (!isLoaded) return;
-    saveToStorage({ timers, history, lastActiveDate });
-  }, [timers, history, lastActiveDate, isLoaded]);
+    saveToStorage({ timers, history, lastActiveDate, accumulatedTodaySeconds });
+  }, [timers, history, lastActiveDate, accumulatedTodaySeconds, isLoaded]);
 
   // Tick del timer - forzar re-render cada segundo para actualizar la UI
   useEffect(() => {
@@ -165,7 +168,19 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeTimer = useCallback((id: string) => {
-    setTimers((prev) => prev.filter((t) => t.id !== id));
+    setTimers((prev) => {
+      const timer = prev.find((t) => t.id === id);
+      if (timer) {
+        let finalElapsed = timer.elapsed;
+        if (timer.isRunning && timer.lastStartedAt) {
+          finalElapsed += Math.floor((Date.now() - timer.lastStartedAt) / 1000);
+        }
+        if (finalElapsed > 0) {
+          setAccumulatedTodaySeconds((acc) => acc + finalElapsed);
+        }
+      }
+      return prev.filter((t) => t.id !== id);
+    });
   }, []);
 
   const toggleTimer = useCallback((id: string) => {
@@ -188,18 +203,23 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetTimer = useCallback((id: string) => {
-    console.log("[v0] Resetting timer:", id);
-    setTimers((prev) =>
-      prev.map((t) => {
-        if (t.id === id) {
-          console.log("[v0] Timer before reset:", t.name, "elapsed:", t.elapsed);
-          const resetTimer = { ...t, elapsed: 0, isRunning: false, lastStartedAt: undefined };
-          console.log("[v0] Timer after reset:", resetTimer.name, "elapsed:", resetTimer.elapsed);
-          return resetTimer;
+    setTimers((prev) => {
+      const timer = prev.find((t) => t.id === id);
+      if (timer) {
+        // Calculate the final elapsed including any running time
+        let finalElapsed = timer.elapsed;
+        if (timer.isRunning && timer.lastStartedAt) {
+          finalElapsed += Math.floor((Date.now() - timer.lastStartedAt) / 1000);
         }
-        return t;
-      }),
-    );
+        // Preserve elapsed time in the daily accumulator
+        if (finalElapsed > 0) {
+          setAccumulatedTodaySeconds((prev) => prev + finalElapsed);
+        }
+      }
+      return prev.map((t) =>
+        t.id === id ? { ...t, elapsed: 0, isRunning: false, lastStartedAt: undefined } : t,
+      );
+    });
   }, []);
 
   const stopAllTimers = useCallback(() => {
@@ -233,18 +253,16 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  // Calcular tiempo total incluyendo timers en ejecución
-  const totalTodaySeconds = timers.reduce((acc, t) => {
+  // Calcular tiempo total: acumulado (de resets/removes) + elapsed actual de cada timer
+  const currentTimersSeconds = timers.reduce((acc, t) => {
     let elapsed = t.elapsed;
     if (t.isRunning && t.lastStartedAt) {
-      const runningTime = Math.floor((Date.now() - t.lastStartedAt) / 1000);
-      elapsed += runningTime;
+      elapsed += Math.floor((Date.now() - t.lastStartedAt) / 1000);
     }
-    console.log("[v0] Timer:", t.name, "- elapsed:", t.elapsed, "- isRunning:", t.isRunning, "- calculated:", elapsed);
     return acc + elapsed;
   }, 0);
-  
-  console.log("[v0] Total today seconds:", totalTodaySeconds);
+
+  const totalTodaySeconds = accumulatedTodaySeconds + currentTimersSeconds;
 
   return (
     <TimerContext.Provider
