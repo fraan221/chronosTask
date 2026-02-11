@@ -207,7 +207,7 @@ export function TimerCard({
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
-  const { name, duration, elapsed, isRunning } = timer;
+  const { name, duration, elapsed, isRunning, lastStartedAt } = timer;
 
   // Alarma de sonido (usa volumen global del SoundContext)
   const { play: playAlarm, stop: stopAlarm } = useSound("/iphone_alarm.mp3");
@@ -215,9 +215,14 @@ export function TimerCard({
   // Ref para trackear si la alarma ya sonó en este ciclo de completado
   const alarmTriggeredForThisCycleRef = useRef(false);
 
+  // Calcular elapsed actual incluyendo el tiempo desde lastStartedAt si está corriendo
+  const currentElapsed = isRunning && lastStartedAt 
+    ? elapsed + Math.floor((Date.now() - lastStartedAt) / 1000)
+    : elapsed;
+
   // Calcular progreso
-  const progress = duration > 0 ? Math.min((elapsed / duration) * 100, 100) : 0;
-  const isCompleted = duration > 0 && elapsed >= duration;
+  const progress = duration > 0 ? Math.min((currentElapsed / duration) * 100, 100) : 0;
+  const isCompleted = duration > 0 && currentElapsed >= duration;
 
   // Detectar cuando el timer se completa y reproducir alarma
   useEffect(() => {
@@ -249,8 +254,8 @@ export function TimerCard({
   // Tiempo format
   const displayTime =
     duration > 0
-      ? formatTime(Math.max(duration - elapsed, 0))
-      : formatTime(elapsed);
+      ? formatTime(Math.max(duration - currentElapsed, 0))
+      : formatTime(currentElapsed);
 
   // Detectar modo Zen desde URL
   useEffect(() => {
@@ -294,12 +299,12 @@ export function TimerCard({
     onSpace: !isFullScreen
       ? isAlarmPlaying
         ? handleStopAlarmAndReset
-        : isHovered || elapsed > 0
+        : isHovered || currentElapsed > 0
           ? onToggle
           : undefined
       : undefined,
     onBackspace:
-      !isFullScreen && (isHovered || elapsed > 0) && elapsed > 0
+      !isFullScreen && (isHovered || currentElapsed > 0) && currentElapsed > 0
         ? isAlarmPlaying
           ? handleStopAlarmAndReset
           : onReset
@@ -314,7 +319,7 @@ export function TimerCard({
           name={name}
           displayTime={displayTime}
           duration={duration}
-          elapsed={elapsed}
+          elapsed={currentElapsed}
           isRunning={isRunning}
           isCompleted={isCompleted}
           isAlarmPlaying={isAlarmPlaying}
@@ -401,7 +406,7 @@ export function TimerCard({
                 variant="ghost"
                 size="icon"
                 onClick={onReset}
-                disabled={elapsed === 0}
+                disabled={currentElapsed === 0}
                 title="Reiniciar"
                 className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
             >

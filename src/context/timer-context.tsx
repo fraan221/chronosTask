@@ -119,27 +119,23 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     saveToStorage({ timers, history, lastActiveDate });
   }, [timers, history, lastActiveDate, isLoaded]);
 
-  // Tick del timer con timestamps precisos para evitar drift
+  // Tick del timer - forzar re-render cada segundo para actualizar la UI
   useEffect(() => {
     const hasRunning = timers.some((t) => t.isRunning);
 
     if (hasRunning) {
       intervalRef.current = setInterval(() => {
-        const now = Date.now();
+        // Forzar actualización para que la UI se actualice
         setTimers((prev) =>
           prev.map((t) => {
             if (t.isRunning && t.lastStartedAt) {
-              // Calcular elapsed basado en timestamp real
-              const runningTime = Math.floor((now - t.lastStartedAt) / 1000);
-              const newElapsed = t.elapsed + runningTime;
+              const now = Date.now();
+              const totalElapsed = t.elapsed + Math.floor((now - t.lastStartedAt) / 1000);
               
-              // Actualizar lastStartedAt para el próximo tick
-              const updatedTimer = { ...t, lastStartedAt: now };
-              
-              if (t.duration > 0 && newElapsed >= t.duration) {
-                return { ...updatedTimer, elapsed: t.duration, isRunning: false, lastStartedAt: undefined };
+              // Si alcanzó la duración, detener el timer
+              if (t.duration > 0 && totalElapsed >= t.duration) {
+                return { ...t, elapsed: t.duration, isRunning: false, lastStartedAt: undefined };
               }
-              return { ...updatedTimer, elapsed: newElapsed };
             }
             return t;
           }),
