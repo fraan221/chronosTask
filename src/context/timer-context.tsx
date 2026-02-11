@@ -188,10 +188,17 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetTimer = useCallback((id: string) => {
+    console.log("[v0] Resetting timer:", id);
     setTimers((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, elapsed: 0, isRunning: false, lastStartedAt: undefined } : t,
-      ),
+      prev.map((t) => {
+        if (t.id === id) {
+          console.log("[v0] Timer before reset:", t.name, "elapsed:", t.elapsed);
+          const resetTimer = { ...t, elapsed: 0, isRunning: false, lastStartedAt: undefined };
+          console.log("[v0] Timer after reset:", resetTimer.name, "elapsed:", resetTimer.elapsed);
+          return resetTimer;
+        }
+        return t;
+      }),
     );
   }, []);
 
@@ -233,8 +240,11 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
       const runningTime = Math.floor((Date.now() - t.lastStartedAt) / 1000);
       elapsed += runningTime;
     }
+    console.log("[v0] Timer:", t.name, "- elapsed:", t.elapsed, "- isRunning:", t.isRunning, "- calculated:", elapsed);
     return acc + elapsed;
   }, 0);
+  
+  console.log("[v0] Total today seconds:", totalTodaySeconds);
 
   return (
     <TimerContext.Provider

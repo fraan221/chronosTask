@@ -12,6 +12,8 @@ interface DailySummaryProps {
 export function DailySummary({
   totalSeconds,
 }: DailySummaryProps) {
+  console.log("[v0] DailySummary rendering with totalSeconds:", totalSeconds);
+  
   return (
     <Card className="border-0 shadow-sm bg-white/80 dark:bg-zinc-900/50 backdrop-blur-md overflow-hidden relative group ring-1 ring-border/50">
       <CardContent className="p-8 relative z-10">
