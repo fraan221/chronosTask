@@ -20,6 +20,7 @@ import {
   IconClock,
   IconMaximize,
   IconMinimize,
+  IconEdit,
 } from "@tabler/icons-react";
 
 interface FocusOverlayProps {
@@ -191,6 +192,7 @@ interface TimerCardProps {
   onToggle: () => void;
   onReset: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 export function TimerCard({
@@ -198,6 +200,7 @@ export function TimerCard({
   onToggle,
   onReset,
   onDelete,
+  onEdit,
 }: TimerCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -338,6 +341,16 @@ export function TimerCard({
             {name}
           </CardTitle>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-colors"
+              onClick={onEdit}
+              disabled={isRunning}
+              title="Editar timer"
+            >
+              <IconEdit className="h-3.5 w-3.5" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
