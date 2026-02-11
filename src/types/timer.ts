@@ -5,6 +5,7 @@ export interface Timer {
   elapsed: number; // tiempo transcurrido en segundos
   isRunning: boolean;
   createdAt: string;
+  lastStartedAt?: number; // timestamp cuando se inició la última vez
 }
 
 export interface DailyRecord {

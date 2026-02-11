@@ -1,14 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { useTimers } from "@/hooks/useTimers";
 import { TimerCard } from "@/components/TimerCard";
 import { CreateTimerForm } from "@/components/CreateTimerForm";
 import { DailySummary } from "@/components/DailySummary";
+import { EditTimerDialog } from "@/components/EditTimerDialog";
+import type { Timer } from "@/types/timer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { IconClock, IconPlayerStop, IconLoader2 } from "@tabler/icons-react";
+import { IconClock, IconLoader2 } from "@tabler/icons-react";
 
 export default function Home() {
+  const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
   const {
     timers,
     isLoaded,
@@ -17,10 +23,17 @@ export default function Home() {
     removeTimer,
     toggleTimer,
     resetTimer,
-    stopAllTimers,
+    editTimer,
   } = useTimers();
 
-  const activeTimersCount = timers.filter((t) => t.isRunning).length;
+  const handleEditTimer = (timer: Timer) => {
+    setEditingTimer(timer);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = (id: string, updates: { name?: string; duration?: number }) => {
+    editTimer(id, updates);
+  };
 
   if (!isLoaded) {
     return (
@@ -34,12 +47,20 @@ export default function Home() {
   }
 
   return (
-    <div className="container mx-auto px-4 pb-12 space-y-12 max-w-5xl">
-      {/* Resumen del día */}
-      <DailySummary
-        totalSeconds={totalTodaySeconds}
-        activeTimers={activeTimersCount}
+    <>
+      <EditTimerDialog
+        timer={editingTimer}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSave={handleSaveEdit}
       />
+
+      <div className="container mx-auto px-4 pb-12 space-y-12 max-w-5xl">
+        {/* Resumen del día */}
+        <DailySummary
+          totalSeconds={totalTodaySeconds}
+          activeTimers={0}
+        />
 
       {/* Sección de Timers */}
       <div className="space-y-8">
@@ -48,20 +69,7 @@ export default function Home() {
             <IconClock className="h-5 w-5 text-primary" stroke={2} />
             Mis Timers
           </h2>
-          <div className="flex items-center gap-3">
-            {activeTimersCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={stopAllTimers}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <IconPlayerStop className="h-4 w-4 mr-2" />
-                Detener todos
-              </Button>
-            )}
-            <CreateTimerForm onCreateTimer={addTimer} />
-          </div>
+          <CreateTimerForm onCreateTimer={addTimer} />
         </div>
 
         {timers.length === 0 ? (
@@ -82,11 +90,13 @@ export default function Home() {
                 onToggle={() => toggleTimer(timer.id)}
                 onReset={() => resetTimer(timer.id)}
                 onDelete={() => removeTimer(timer.id)}
+                onEdit={() => handleEditTimer(timer)}
               />
             ))}
           </div>
         )}
       </div>
     </div>
+    </>
   );
 }
