@@ -263,6 +263,17 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   }, 0);
 
   const totalTodaySeconds = accumulatedTodaySeconds + currentTimersSeconds;
+  
+  console.log("[v0] === TOTAL CALCULATION ===");
+  console.log("[v0] accumulatedTodaySeconds:", accumulatedTodaySeconds);
+  console.log("[v0] currentTimersSeconds:", currentTimersSeconds);
+  console.log("[v0] totalTodaySeconds:", totalTodaySeconds);
+  timers.forEach(t => {
+    const liveElapsed = t.isRunning && t.lastStartedAt 
+      ? t.elapsed + Math.floor((Date.now() - t.lastStartedAt) / 1000)
+      : t.elapsed;
+    console.log(`[v0] Timer "${t.name}": elapsed=${t.elapsed}, isRunning=${t.isRunning}, lastStartedAt=${t.lastStartedAt}, liveElapsed=${liveElapsed}`);
+  });
 
   return (
     <TimerContext.Provider
