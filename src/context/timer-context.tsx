@@ -74,6 +74,8 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timersRef = useRef(timers);
+  timersRef.current = timers;
 
   // Cargar datos del localStorage al montar
   useEffect(() => {
@@ -92,13 +94,14 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     const today = getToday();
 
     if (lastActiveDate !== today) {
-      const totalSeconds = accumulatedTodaySeconds + timers.reduce((acc, t) => acc + t.elapsed, 0);
+      const currentTimers = timersRef.current;
+      const totalSeconds = accumulatedTodaySeconds + currentTimers.reduce((acc, t) => acc + t.elapsed, 0);
 
-      if (totalSeconds > 0 || timers.length > 0) {
+      if (totalSeconds > 0 || currentTimers.length > 0) {
         const dailyRecord: DailyRecord = {
           date: lastActiveDate,
           totalSeconds,
-          timers: timers.map((t) => ({ ...t, isRunning: false })),
+          timers: currentTimers.map((t) => ({ ...t, isRunning: false })),
         };
 
         setHistory((prev) => {
@@ -114,7 +117,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
       setAccumulatedTodaySeconds(0);
       setLastActiveDate(today);
     }
-  }, [isLoaded, lastActiveDate, timers]);
+  }, [isLoaded, lastActiveDate, accumulatedTodaySeconds]);
 
   // Guardar en localStorage
   useEffect(() => {
@@ -122,29 +125,49 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     saveToStorage({ timers, history, lastActiveDate, accumulatedTodaySeconds });
   }, [timers, history, lastActiveDate, accumulatedTodaySeconds, isLoaded]);
 
-  // Tick del timer - forzar re-render cada segundo para actualizar la UI
-  useEffect(() => {
-    const hasRunning = timers.some((t) => t.isRunning);
+  // Tick para forzar re-render sin recrear el intervalo
+  const [, setTick] = useState(0);
 
-    if (hasRunning) {
-      intervalRef.current = setInterval(() => {
-        // Forzar actualización para que la UI se actualice
+  // Número de timers corriendo -- valor estable (número) para la dependencia del effect
+  const runningCount = timers.filter((t) => t.isRunning).length;
+
+  // Tick del timer -- intervalo estable que solo se recrea cuando cambia runningCount
+  useEffect(() => {
+    if (runningCount === 0) return;
+
+    intervalRef.current = setInterval(() => {
+      const now = Date.now();
+      const current = timersRef.current;
+      let hasCompleted = false;
+
+      for (const t of current) {
+        if (t.isRunning && t.lastStartedAt && t.duration > 0) {
+          const totalElapsed = t.elapsed + Math.floor((now - t.lastStartedAt) / 1000);
+          if (totalElapsed >= t.duration) {
+            hasCompleted = true;
+            break;
+          }
+        }
+      }
+
+      if (hasCompleted) {
+        // Solo mutar estado de timers cuando uno se completa
         setTimers((prev) =>
           prev.map((t) => {
-            if (t.isRunning && t.lastStartedAt) {
-              const now = Date.now();
-              const totalElapsed = t.elapsed + Math.floor((now - t.lastStartedAt) / 1000);
-              
-              // Si alcanzó la duración, detener el timer
-              if (t.duration > 0 && totalElapsed >= t.duration) {
+            if (t.isRunning && t.lastStartedAt && t.duration > 0) {
+              const totalElapsed = t.elapsed + Math.floor((Date.now() - t.lastStartedAt) / 1000);
+              if (totalElapsed >= t.duration) {
                 return { ...t, elapsed: t.duration, isRunning: false, lastStartedAt: undefined };
               }
             }
             return t;
           }),
         );
-      }, 1000);
-    }
+      } else {
+        // Forzar re-render para que la UI actualice los contadores
+        setTick((c) => c + 1);
+      }
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
@@ -152,7 +175,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
         intervalRef.current = null;
       }
     };
-  }, [timers]);
+  }, [runningCount]);
 
   const addTimer = useCallback((name: string, durationMinutes: number) => {
     const newTimer: Timer = {
